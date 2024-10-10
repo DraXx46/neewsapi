@@ -1,5 +1,5 @@
-// Defina sua chave da API aqui
-const apiKey = '923a00fc9d51443b90aa7c3570f3b07c'; // Substitua pela sua chave API
+
+const apiKey = '923a00fc9d51443b90aa7c3570f3b07c'; 
 const baseUrlEverything = `https://newsapi.org/v2/everything?apikey=${apiKey}&q=`;
 const baseUrlTopHeadlines = `https://newsapi.org/v2/top-headlines?apikey=${apiKey}&country=us`;
 const baseUrlSources = `https://newsapi.org/v2/sources?apikey=${apiKey}`;
@@ -7,7 +7,7 @@ const baseUrlLogs = 'https://www.piway.com.br/unoesc/api/logs/MATRICULA'; // Par
 const baseUrlInsertLog = 'https://www.piway.com.br/unoesc/api/inserir/log/MATRICULA/API/METODO/RESULTADO'; // Para inserir log
 const baseUrlDeleteLog = 'https://www.piway.com.br/unoesc/api/excluir/log/IDLOG/aluno/MATRICULA'; // Para excluir log
 
-const matricula = '417985'; // Substitua pelo seu número de matrícula
+const matricula = '417985'; 
 
 async function fetchTopHeadlines() {
     const apiUrl = baseUrlTopHeadlines;
