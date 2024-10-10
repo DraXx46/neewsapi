@@ -1,4 +1,5 @@
-const apiKey = '923a00fc9d51443b90aa7c3570f3b07c'; 
+// Defina sua chave da API aqui
+const apiKey = '923a00fc9d51443b90aa7c3570f3b07c'; // Substitua pela sua chave API
 const baseUrlEverything = `https://newsapi.org/v2/everything?apikey=${apiKey}&q=`;
 const baseUrlTopHeadlines = `https://newsapi.org/v2/top-headlines?apikey=${apiKey}&country=us`;
 const baseUrlSources = `https://newsapi.org/v2/sources?apikey=${apiKey}`;
@@ -6,13 +7,18 @@ const baseUrlLogs = 'https://www.piway.com.br/unoesc/api/logs/MATRICULA'; // Par
 const baseUrlInsertLog = 'https://www.piway.com.br/unoesc/api/inserir/log/MATRICULA/API/METODO/RESULTADO'; // Para inserir log
 const baseUrlDeleteLog = 'https://www.piway.com.br/unoesc/api/excluir/log/IDLOG/aluno/MATRICULA'; // Para excluir log
 
-const matricula = '417985'; 
+const matricula = '417985'; // Substitua pelo seu número de matrícula
 
 async function fetchTopHeadlines() {
     const apiUrl = baseUrlTopHeadlines;
     try {
         const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`Erro: ${response.status} - ${response.statusText}`);
         const data = await response.json();
+        if (!data.articles) {
+            console.error('Nenhum artigo encontrado na resposta da API.');
+            return;
+        }
         displayNews(data.articles);
         await logAction('NewsAPI', 'top-headlines', JSON.stringify(data.articles.length)); // Registra log
     } catch (error) {
@@ -25,7 +31,12 @@ async function fetchEverything() {
     const apiUrl = `${baseUrlEverything}${query}`;
     try {
         const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`Erro: ${response.status} - ${response.statusText}`);
         const data = await response.json();
+        if (!data.articles) {
+            console.error('Nenhum artigo encontrado na resposta da API.');
+            return;
+        }
         displayNews(data.articles);
         await logAction('NewsAPI', 'everything', query); // Registra log com a consulta
     } catch (error) {
@@ -37,7 +48,12 @@ async function fetchSources() {
     const apiUrl = baseUrlSources;
     try {
         const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`Erro: ${response.status} - ${response.statusText}`);
         const data = await response.json();
+        if (!data.sources) {
+            console.error('Nenhuma fonte encontrada na resposta da API.');
+            return;
+        }
         displaySources(data.sources);
         await logAction('NewsAPI', 'sources', JSON.stringify(data.sources.length)); // Registra log
     } catch (error) {
@@ -65,6 +81,7 @@ async function fetchLogs() {
     const apiUrl = baseUrlLogs.replace('MATRICULA', matricula);
     try {
         const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`Erro: ${response.status} - ${response.statusText}`);
         const data = await response.json();
         displayLogs(data); // Exibe os logs
     } catch (error) {
@@ -80,12 +97,11 @@ function displayLogs(logs) {
         logs.forEach(log => {
             const logItem = document.createElement('div');
             logItem.classList.add('log-item');
-            logItem.setAttribute('data-id', log.id); // Define um atributo de dados com o ID do log
             logItem.innerHTML = `
                 <p><strong>API:</strong> ${log.api}</p>
                 <p><strong>Método:</strong> ${log.metodo}</p>
                 <p><strong>Resultado:</strong> ${log.resultado}</p>
-                <button onclick="deleteLog(${log.id}, '${matricula}', this)">Excluir</button>
+                <button onclick="deleteLog(${log.id}, '${matricula}')">Excluir</button>
             `;
             logsContainer.appendChild(logItem);
         });
@@ -96,33 +112,20 @@ function displayLogs(logs) {
     document.getElementById('logsModal').style.display = 'block'; // Abre o modal
 }
 
-async function deleteLog(id, matricula, button) {
-    if (id === undefined || id === null) {
-        console.error("ID do log não fornecido.");
-        return; // Para se não houver ID
+async function deleteLog(id, matricula) {
+    if (!id) {
+        console.error('ID do log não fornecido.');
+        return;
     }
-
     const apiUrl = baseUrlDeleteLog
         .replace('IDLOG', id)
         .replace('MATRICULA', matricula);
     
     try {
-        const response = await fetch(apiUrl, { method: 'DELETE' }); // Chama o método DELETE
+        const response = await fetch(apiUrl);
         const data = await response.json();
         console.log(data); // Mostra a resposta da exclusão do log
-
-        // Exclui o log da interface
-        if (data.message && data.message.includes("1 log foi excluído")) {
-            const logItem = button.parentElement; // Pega o elemento pai do botão
-            logItem.remove(); // Remove o log da interface
-        }
-
-        // Exibe mensagem com o resultado da exclusão
-        if (data && data.message) {
-            alert(data.message); // Mostra a mensagem de sucesso ou erro
-        } else {
-            alert('Erro ao excluir o log.');
-        }
+        fetchLogs(); // Atualiza a lista de logs
     } catch (error) {
         console.error('Erro ao excluir log:', error);
     }
